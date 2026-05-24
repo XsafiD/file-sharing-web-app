@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Share — UKK DKV 2026</title>
+
+    <!-- Inter Font (Coinbase substitute) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0052ff',
+                        'primary-active': '#003ecc',
+                        'primary-disabled': '#a8b8cc',
+                        canvas: '#ffffff',
+                        'surface-soft': '#f7f7f7',
+                        'surface-strong': '#eef0f3',
+                        'surface-dark': '#0a0b0d',
+                        'surface-dark-elevated': '#16181c',
+                        hairline: '#dee1e6',
+                        ink: '#0a0b0d',
+                        body: '#5b616e',
+                        muted: '#7c828a',
+                        'on-primary': '#ffffff',
+                        'on-dark': '#ffffff',
+                        'on-dark-soft': '#a8acb3',
+                    },
+                    fontFamily: {
+                        display: ['Inter', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    spacing: {
+                        section: '96px',
+                    },
+                    borderRadius: {
+                        pill: '100px',
+                        xl: '24px',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .font-display {
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.03em;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .display-lg {
+            font-size: 52px;
+            font-weight: 400;
+            line-height: 1;
+            letter-spacing: -1.3px;
+        }
+
+        .display-md {
+            font-size: 44px;
+            font-weight: 400;
+            line-height: 1.09;
+            letter-spacing: -1px;
+        }
+
+        .title-md {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.33;
+        }
+
+        .body-md {
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        .caption {
+            font-size: 13px;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .display-lg {
+                font-size: 36px;
+            }
+            .display-md {
+                font-size: 32px;
+            }
+        }
+
+        .btn-primary {
+            background-color: #0052ff;
+            color: #ffffff;
+            padding: 12px 20px;
+            height: 44px;
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #003ecc;
+        }
+
+        .btn-secondary {
+            background-color: #eef0f3;
+            color: #0a0b0d;
+            padding: 12px 20px;
+            height: 44px;
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background-color: #dee1e6;
+        }
+
+        .file-card {
+            background-color: #ffffff;
+            border-radius: 24px;
+            border: 1px solid #dee1e6;
+            transition: all 0.3s ease;
+        }
+
+        .file-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-color: #0052ff;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-canvas">
+
+    <!-- Header -->
+    <header class="bg-canvas border-b border-hairline sticky top-0 z-40">
+        <div class="max-w-[1200px] mx-auto px-6">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo & Title -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                        <i data-lucide="share-2" class="w-5 h-5 text-on-primary"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-semibold text-ink text-lg">File Share</h1>
+                        <p class="caption text-muted">UKK DKV 2026</p>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="flex items-center gap-4">
+                    <div class="hidden sm:flex items-center gap-2 px-4 py-2 bg-surface-strong rounded-pill">
+                        <i data-lucide="files" class="w-4 h-4 text-muted"></i>
+                        <span id="total-files" class="caption font-medium text-ink">3 files</span>
+                    </div>
+                    <div class="hidden sm:flex items-center gap-2 px-4 py-2 bg-surface-strong rounded-pill">
+                        <i data-lucide="hard-drive" class="w-4 h-4 text-muted"></i>
+                        <span id="total-size" class="caption font-medium text-ink">10.6 MB</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="py-section">
+        <div class="max-w-[1200px] mx-auto px-6">
+
+            <!-- Page Title & Actions -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                <div>
+                    <h2 class="display-lg font-display text-ink mb-2">Shared Files</h2>
+                    <p class="body-md text-body">
+                        Download resources for UKK DKV 2026 projects
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <!-- Search -->
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted"></i>
+                        <input
+                            type="text"
+                            id="search-input"
+                            placeholder="Search files..."
+                            oninput="handleSearch(this.value)"
+                            class="pl-10 pr-4 py-2.5 bg-surface-strong rounded-pill border-0 focus:ring-2 focus:ring-primary focus:outline-none text-sm w-48"
+                        >
+                    </div>
+
+                    <!-- Refresh Button -->
+                    <button
+                        id="btn-refresh"
+                        onclick="manualRefresh()"
+                        class="p-2.5 bg-surface-strong rounded-lg flex items-center gap-2 transition-all duration-200 text-body hover:text-ink hover:bg-white hover:shadow-sm"
+                        title="Refresh files"
+                    >
+                        <i data-lucide="refresh-cw" id="refresh-icon" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline text-sm font-medium">Refresh</span>
+                    </button>
+
+                    <!-- View Toggle -->
+                    <div class="bg-surface-strong p-1 rounded-lg flex items-center">
+                        <button
+                            id="btn-grid"
+                            onclick="setViewMode('grid')"
+                            class="p-2 rounded-md transition-all duration-200 bg-white shadow-sm"
+                            title="Grid View"
+                        >
+                            <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                        </button>
+                        <button
+                            id="btn-list"
+                            onclick="setViewMode('list')"
+                            class="p-2 rounded-md transition-all duration-200 text-body hover:text-ink"
+                            title="List View"
+                        >
+                            <i data-lucide="list" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="flex items-center gap-2 mb-6 flex-wrap">
+                <button
+                    onclick="filterByCategory('all')"
+                    class="category-btn active px-4 py-2 rounded-pill text-sm font-medium transition-all duration-200"
+                    data-category="all"
+                >
+                    All Files
+                </button>
+                <button
+                    onclick="filterByCategory('animation')"
+                    class="category-btn px-4 py-2 rounded-pill text-sm font-medium transition-all duration-200"
+                    data-category="animation"
+                >
+                    Animation
+                </button>
+                <button
+                    onclick="filterByCategory('illustration')"
+                    class="category-btn px-4 py-2 rounded-pill text-sm font-medium transition-all duration-200"
+                    data-category="illustration"
+                >
+                    Illustration
+                </button>
+                <button
+                    onclick="filterByCategory('video')"
+                    class="category-btn px-4 py-2 rounded-pill text-sm font-medium transition-all duration-200"
+                    data-category="video"
+                >
+                    Video
+                </button>
+            </div>
+
+            <!-- Files Container -->
+            <div id="file-container">
+                <!-- Files will be rendered here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden text-center py-16">
+                <div class="w-16 h-16 bg-surface-strong rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="search-x" class="w-8 h-8 text-muted"></i>
+                </div>
+                <h3 class="title-lg text-ink mb-2">No files found</h3>
+                <p class="body-md text-muted">Try adjusting your search or filter</p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Download All Bar -->
+    <div class="fixed bottom-0 left-0 right-0 bg-surface-dark border-t border-hairline py-4 z-30">
+        <div class="max-w-[1200px] mx-auto px-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-surface-dark-elevated rounded-full flex items-center justify-center">
+                        <i data-lucide="download" class="w-5 h-5 text-on-dark"></i>
+                    </div>
+                    <div>
+                        <p class="body-md text-on-dark font-medium">Download All Files</p>
+                        <p class="caption text-on-dark-soft" id="download-all-info">3 files · 10.6 MB</p>
+                    </div>
+                </div>
+                <button onclick="downloadAll()" class="btn-primary">
+                    Download All
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div
+        id="toast"
+        class="fixed bottom-24 right-6 bg-surface-dark text-on-dark px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0 pointer-events-none z-50"
+    >
+        <i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>
+        <span id="toast-message" class="body-md"></span>
+    </div>
+
+    <script>
+        // Dynamic file data (loaded from API)
+        let sharedFiles = [];
+        let currentView = 'grid';
+        let currentCategory = 'all';
+        let filteredFiles = [];
+        let toastTimeout;
+
+        // Get icon config
+        function getIconConfig(type) {
+            const configs = {
+                'archive': { icon: 'file-archive', colorClass: 'text-orange-500', bgClass: 'bg-orange-50' },
+                'pdf': { icon: 'file-text', colorClass: 'text-red-500', bgClass: 'bg-red-50' },
+                'image': { icon: 'image', colorClass: 'text-blue-500', bgClass: 'bg-blue-50' },
+                'video': { icon: 'video', colorClass: 'text-purple-500', bgClass: 'bg-purple-50' },
+            };
+            return configs[type] || { icon: 'file', colorClass: 'text-body', bgClass: 'bg-surface-soft' };
+        }
+
+        // Format date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        // Calculate total size
+        function calculateTotalSize(files) {
+            const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
+            if (totalBytes >= 1048576) {
+                return (totalBytes / 1048576).toFixed(1) + ' MB';
+            }
+            return (totalBytes / 1024).toFixed(1) + ' KB';
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('total-files').textContent = `${sharedFiles.length} files`;
+            document.getElementById('total-size').textContent = calculateTotalSize(sharedFiles);
+            document.getElementById('download-all-info').textContent = `${sharedFiles.length} files · ${calculateTotalSize(sharedFiles)}`;
+        }
+
+        // Set view mode
+        function setViewMode(mode) {
+            currentView = mode;
+
+            const btnGrid = document.getElementById('btn-grid');
+            const btnList = document.getElementById('btn-list');
+
+            if (mode === 'grid') {
+                btnGrid.className = 'p-2 rounded-md transition-all duration-200 bg-white shadow-sm';
+                btnList.className = 'p-2 rounded-md transition-all duration-200 text-body hover:text-ink';
+            } else {
+                btnList.className = 'p-2 rounded-md transition-all duration-200 bg-white shadow-sm';
+                btnGrid.className = 'p-2 rounded-md transition-all duration-200 text-body hover:text-ink';
+            }
+
+            renderFiles();
+        }
+
+        // Filter by category
+        function filterByCategory(category) {
+            currentCategory = category;
+
+            // Update button styles
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                if (btn.dataset.category === category) {
+                    btn.className = 'category-btn active px-4 py-2 rounded-pill text-sm font-medium transition-all duration-200 bg-primary text-on-primary';
+                } else {
+                    btn.className = 'category-btn px-4 py-2 rounded-pill text-sm font-medium transition-all duration-200 bg-surface-strong text-body hover:text-ink';
+                }
+            });
+
+            // Apply filter
+            if (category === 'all') {
+                filteredFiles = [...sharedFiles];
+            } else {
+                filteredFiles = sharedFiles.filter(file => file.category === category);
+            }
+
+            // Re-apply search if exists
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            if (searchTerm) {
+                filteredFiles = filteredFiles.filter(file =>
+                    file.name.toLowerCase().includes(searchTerm) ||
+                    file.description.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            renderFiles();
+        }
+
+        // Handle search
+        function handleSearch(query) {
+            const searchTerm = query.toLowerCase();
+
+            let baseFiles = currentCategory === 'all'
+                ? [...sharedFiles]
+                : sharedFiles.filter(file => file.category === currentCategory);
+
+            filteredFiles = baseFiles.filter(file =>
+                file.name.toLowerCase().includes(searchTerm) ||
+                file.description.toLowerCase().includes(searchTerm)
+            );
+
+            renderFiles();
+        }
+
+        // Handle download
+        function handleDownload(fileId) {
+            const file = sharedFiles.find(f => f.id === fileId);
+            if (file) {
+                showToast(`Starting download: ${file.name}`);
+
+                // Use file.path for correct download location
+                const link = document.createElement('a');
+                link.href = `data/${encodeURIComponent(file.path)}`;
+                link.download = file.name;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        // Download all
+        function downloadAll() {
+            showToast('Downloading all files...');
+
+            // Download each file with a small delay
+            sharedFiles.forEach((file, index) => {
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = `data/${encodeURIComponent(file.path)}`;
+                    link.download = file.name;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }, index * 500); // 500ms delay between downloads
+            });
+        }
+
+        // Manual refresh with animation
+        async function manualRefresh() {
+            const refreshIcon = document.getElementById('refresh-icon');
+            const refreshBtn = document.getElementById('btn-refresh');
+
+            // Add spinning animation
+            refreshIcon.style.animation = 'spin 1s linear infinite';
+            refreshBtn.disabled = true;
+            refreshBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Fetch files
+            await fetchFiles();
+
+            // Remove animation after a short delay
+            setTimeout(() => {
+                refreshIcon.style.animation = '';
+                refreshBtn.disabled = false;
+                refreshBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }, 500);
+        }
+
+        // Show toast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+
+            toastMsg.textContent = message;
+
+            toast.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            clearTimeout(toastTimeout);
+
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        // Render files
+        function renderFiles() {
+            const container = document.getElementById('file-container');
+            const emptyState = document.getElementById('empty-state');
+
+            if (filteredFiles.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            if (currentView === 'grid') {
+                container.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-24';
+
+                container.innerHTML = filteredFiles.map(file => {
+                    const icon = getIconConfig(file.type);
+                    const folderBadge = file.folder
+                        ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-strong rounded-md text-xs text-muted">
+                             <i data-lucide="folder" class="w-3 h-3"></i>
+                             ${file.folder}
+                           </span>`
+                        : '';
+
+                    return `
+                    <div class="file-card p-6 group">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div class="p-3 ${icon.bgClass} rounded-xl shrink-0">
+                                <i data-lucide="${icon.icon}" class="${icon.colorClass} w-8 h-8"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <h3 class="title-md text-ink mb-1 line-clamp-2" title="${file.name}">
+                                    ${file.name}
+                                </h3>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    ${folderBadge}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4 caption text-muted mb-4">
+                            <span class="font-mono">${file.sizeFormatted}</span>
+                            <span>•</span>
+                            <span>${formatDate(file.date)}</span>
+                        </div>
+
+                        <button
+                            onclick="handleDownload(${file.id})"
+                            class="w-full btn-primary flex items-center justify-center gap-2"
+                        >
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            Download
+                        </button>
+                    </div>`;
+                }).join('');
+
+            } else {
+                container.className = 'bg-white rounded-xl border border-hairline overflow-hidden pb-24';
+
+                container.innerHTML = filteredFiles.map(file => {
+                    const icon = getIconConfig(file.type);
+                    const folderBadge = file.folder
+                        ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-strong rounded-md text-xs text-muted">
+                             <i data-lucide="folder" class="w-3 h-3"></i>
+                             ${file.folder}
+                           </span>`
+                        : '';
+
+                    return `
+                    <div class="p-4 flex items-center justify-between hover:bg-surface-soft transition-colors duration-200 border-b border-hairline last:border-0">
+                        <div class="flex items-center gap-4 min-w-0">
+                            <div class="p-3 ${icon.bgClass} rounded-xl shrink-0">
+                                <i data-lucide="${icon.icon}" class="${icon.colorClass} w-6 h-6"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="title-md text-ink truncate" title="${file.name}">
+                                    ${file.name}
+                               </h3>
+                               <div class="flex items-center gap-2 mt-1">
+                                   ${folderBadge}
+                               </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-6 shrink-0">
+                            <div class="hidden sm:block text-right">
+                                <p class="caption font-mono text-muted">${file.sizeFormatted}</p>
+                                <p class="caption text-muted">${formatDate(file.date)}</p>
+                            </div>
+                            <button
+                                onclick="handleDownload(${file.id})"
+                                class="btn-primary flex items-center gap-2"
+                            >
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                                <span class="hidden sm:inline">Download</span>
+                            </button>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+
+            lucide.createIcons();
+        }
+
+        // Fetch files from API
+        async function fetchFiles() {
+            try {
+                const response = await fetch('/api/files');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch files');
+                }
+                sharedFiles = await response.json();
+                filteredFiles = [...sharedFiles];
+                updateStats();
+                renderFiles();
+                lucide.createIcons();
+
+                // Set initial category button state
+                document.querySelector('.category-btn[data-category="all"]').className =
+                    'category-btn active px-4 py-2 rounded-pill text-sm font-medium transition-all duration-200 bg-primary text-on-primary';
+            } catch (error) {
+                console.error('Error fetching files:', error);
+                // Show error state
+                document.getElementById('file-container').innerHTML = `
+                    <div class="text-center py-16">
+                        <div class="w-16 h-16 bg-surface-strong rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="alert-circle" class="w-8 h-8 text-red-500"></i>
+                        </div>
+                        <h3 class="title-lg text-ink mb-2">Failed to load files</h3>
+                        <p class="body-md text-muted">Please refresh the page or check the server connection</p>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchFiles();
+        });
+
+        // Auto-refresh files every 30 seconds
+        setInterval(fetchFiles, 30000);
+    </script>
+</body>
+</html>
