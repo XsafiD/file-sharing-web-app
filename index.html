@@ -338,6 +338,13 @@
         let filteredFiles = [];
         let toastTimeout;
 
+        // WebSocket for real-time updates
+        let ws = null;
+        let wsReconnectAttempts = 0;
+        let wsMaxReconnectAttempts = 5;
+        let wsReconnectDelay = 2000; // Start with 2 seconds
+        let wsConnected = false;
+
         // Get icon config
         function getIconConfig(type) {
             const configs = {
@@ -646,13 +653,144 @@
             }
         }
 
+        // WebSocket Connection
+        function connectWebSocket() {
+            // Determine WebSocket URL
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log('✅ WebSocket connected');
+                wsConnected = true;
+                wsReconnectAttempts = 0;
+                wsReconnectDelay = 2000;
+
+                // Update UI to show connection status
+                updateConnectionStatus(true);
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const message = JSON.parse(event.data);
+
+                    switch (message.type) {
+                        case 'connected':
+                            console.log('📡 Server says:', message.message);
+                            break;
+
+                        case 'initial':
+                        case 'files_update':
+                            // Update files from server
+                            sharedFiles = message.data;
+                            filteredFiles = [...sharedFiles];
+
+                            // Re-apply current filter
+                            if (currentCategory !== 'all') {
+                                filteredFiles = sharedFiles.filter(file => file.category === currentCategory);
+                            }
+
+                            // Re-apply search if exists
+                            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+                            if (searchTerm) {
+                                filteredFiles = filteredFiles.filter(file =>
+                                    file.name.toLowerCase().includes(searchTerm) ||
+                                    file.description.toLowerCase().includes(searchTerm)
+                                );
+                            }
+
+                            updateStats();
+                            renderFiles();
+                            lucide.createIcons();
+
+                            if (message.type === 'files_update') {
+                                console.log('🔄 Files updated from server');
+                            }
+                            break;
+
+                        case 'pong':
+                            // Server pong response - connection is alive
+                            break;
+
+                        default:
+                            console.log('📨 Unknown message type:', message.type);
+                    }
+                } catch (e) {
+                    console.error('Error parsing WebSocket message:', e);
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error('❌ WebSocket error:', error);
+            };
+
+            ws.onclose = (event) => {
+                console.log('🔌 WebSocket disconnected:', event.code, event.reason);
+                wsConnected = false;
+                updateConnectionStatus(false);
+
+                // Attempt to reconnect
+                if (wsReconnectAttempts < wsMaxReconnectAttempts) {
+                    wsReconnectAttempts++;
+                    console.log(`🔄 Reconnecting... Attempt ${wsReconnectAttempts}/${wsMaxReconnectAttempts} in ${wsReconnectDelay}ms`);
+
+                    setTimeout(() => {
+                        connectWebSocket();
+                        wsReconnectDelay = Math.min(wsReconnectDelay * 2, 30000); // Max 30 seconds
+                    }, wsReconnectDelay);
+                } else {
+                    console.log('❌ Max reconnection attempts reached. Falling back to polling.');
+                    // Fallback to polling
+                    setInterval(fetchFiles, 30000);
+                }
+            };
+        }
+
+        // Update connection status indicator
+        function updateConnectionStatus(connected) {
+            const statusIndicator = document.getElementById('connection-status');
+            if (!statusIndicator) {
+                // Create status indicator if it doesn't exist
+                const stats = document.querySelector('.flex.items-center.gap-4');
+                if (stats) {
+                    const indicator = document.createElement('div');
+                    indicator.id = 'connection-status';
+                    indicator.className = 'hidden sm:flex items-center gap-2 px-4 py-2 bg-surface-strong rounded-pill';
+                    indicator.innerHTML = `
+                        <div class="w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}"></div>
+                        <span class="caption font-medium text-ink">${connected ? 'Live' : 'Offline'}</span>
+                    `;
+                    stats.appendChild(indicator);
+                }
+            } else {
+                const dot = statusIndicator.querySelector('.w-2');
+                const text = statusIndicator.querySelector('.caption');
+                if (dot && text) {
+                    dot.className = `w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`;
+                    text.textContent = connected ? 'Live' : 'Offline';
+                }
+            }
+        }
+
+        // Send ping to keep connection alive
+        function sendWebSocketPing() {
+            if (ws && wsConnected && ws.readyState === WebSocket.OPEN) {
+                ws.send('ping');
+            }
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            fetchFiles();
-        });
+            // Try to connect to WebSocket first
+            connectWebSocket();
 
-        // Auto-refresh files every 30 seconds
-        setInterval(fetchFiles, 30000);
+            // Fetch initial files via API as backup
+            fetchFiles();
+
+            // Send ping every 30 seconds to keep connection alive
+            setInterval(sendWebSocketPing, 30000);
+        });
     </script>
 </body>
 </html>
